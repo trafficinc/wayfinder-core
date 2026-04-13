@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Wayfinder\Console\Application;
+use Wayfinder\Console\NewAppCommand;
+
+$autoload = __DIR__ . '/../vendor/autoload.php';
+
+if (! is_file($autoload)) {
+    fwrite(STDERR, "Wayfinder dependencies are not installed. Run composer install in the framework package first.\n");
+
+    exit(1);
+}
+
+require $autoload;
+
+$application = new Application('0.1.0');
+$application->add(new NewAppCommand(__DIR__ . '/../../wayfinder-app', getcwd()));
+
+exit($application->run($argv));
