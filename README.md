@@ -4,7 +4,7 @@ Core repository for the Wayfinder PHP framework.
 
 This repo is intentionally kept separate from the test application. The framework is being built around explicit wiring and no hidden framework magic.
 
-For package naming, starter-app distribution, and local Composer override workflow, see `docs/local-development.md`.
+For package naming, starter-app distribution, and local Composer override workflow, see `docs/local-development.md`. This is the core package, to install the framework go here: [wayfinder/app](https://github.com/trafficinc/wayfinder-app)
 
 ## Current state
 
