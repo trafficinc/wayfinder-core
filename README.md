@@ -1223,12 +1223,3 @@ return new class implements Migration
     }
 };
 ```
-
-## Next areas
-
-Still to be built:
-
-- views
-- CLI tooling
-- migrations
-- adapter boundaries around storage and infrastructure
