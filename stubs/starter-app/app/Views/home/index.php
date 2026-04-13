@@ -7,85 +7,215 @@
     <style>
         :root {
             --bg: #f4f7f5;
-            --card: #ffffff;
-            --ink: #183028;
-            --muted: #5a6f67;
+            --surface: rgba(255, 255, 255, 0.82);
+            --surface-strong: #ffffff;
+            --ink: #193126;
+            --muted: #62756d;
             --accent: #2f7d5c;
-            --line: #d6e4dc;
+            --accent-deep: #1f5f45;
+            --line: rgba(27, 58, 46, 0.12);
+            --line-strong: rgba(27, 58, 46, 0.18);
             --danger: #9b2c2c;
+            --shadow: 0 28px 70px rgba(20, 41, 34, 0.10);
         }
 
         * {
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
             font-family: Georgia, "Times New Roman", serif;
-            background:
-                radial-gradient(circle at top right, rgba(47, 125, 92, 0.10), transparent 25%),
-                linear-gradient(180deg, #f8fbf9 0%, var(--bg) 100%);
             color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(47, 125, 92, 0.12), transparent 26%),
+                radial-gradient(circle at top right, rgba(27, 58, 46, 0.10), transparent 18%),
+                linear-gradient(180deg, #f9fcfa 0%, var(--bg) 46%, #eef4f1 100%);
         }
 
-        main {
-            max-width: 1080px;
+        a {
+            color: inherit;
+        }
+
+        .shell {
+            max-width: 1160px;
             margin: 0 auto;
-            padding: 48px 24px 80px;
+            padding: 28px 24px 88px;
         }
 
-        .card {
-            background: var(--card);
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 34px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2f7d5c 0%, #173d2f 100%);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 16px 34px rgba(47, 125, 92, 0.24);
+        }
+
+        .brand-copy {
+            display: grid;
+            gap: 2px;
+        }
+
+        .brand-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .brand-meta {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .topnav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topnav a,
+        .topnav span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
             border: 1px solid var(--line);
-            border-radius: 18px;
-            padding: 32px;
-            box-shadow: 0 18px 50px rgba(24, 48, 40, 0.08);
+            background: rgba(255, 255, 255, 0.64);
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.92rem;
+        }
+
+        .topnav a:hover {
+            border-color: var(--line-strong);
+            color: var(--ink);
         }
 
         .hero {
             display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-            gap: 24px;
+            grid-template-columns: minmax(0, 1.28fr) minmax(300px, 0.72fr);
+            gap: 26px;
             align-items: stretch;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
+        }
+
+        .panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-panel {
+            padding: 42px 42px 40px;
+        }
+
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            inset: auto -8% 58% auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(47, 125, 92, 0.18) 0%, transparent 72%);
+            pointer-events: none;
         }
 
         .eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             padding: 8px 12px;
             border-radius: 999px;
             border: 1px solid var(--line);
-            background: #f7fbf8;
+            background: rgba(255, 255, 255, 0.72);
             color: var(--accent);
-            font-size: .92rem;
+            font-size: 0.9rem;
             font-weight: 700;
         }
 
         h1 {
-            margin: 0 0 14px;
-            font-size: clamp(2.8rem, 8vw, 5.2rem);
-            line-height: .95;
+            margin: 0 0 16px;
+            max-width: 11ch;
+            font-size: clamp(3.15rem, 8vw, 5.7rem);
+            line-height: 0.92;
+            letter-spacing: -0.04em;
         }
 
         p {
-            font-size: 1.05rem;
-            line-height: 1.65;
             margin: 0 0 16px;
+            font-size: 1.04rem;
+            line-height: 1.7;
         }
 
-        .subtitle {
+        .lede {
+            max-width: 40rem;
             color: var(--muted);
-            max-width: 46rem;
+            font-size: 1.08rem;
+        }
+
+        .hero-proof {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 30px;
+        }
+
+        .proof {
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.76);
+        }
+
+        .proof strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 1.02rem;
+        }
+
+        .proof span {
+            color: var(--muted);
+            font-size: 0.95rem;
         }
 
         .cta-row {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-top: 28px;
+            margin-top: 30px;
         }
 
         .button,
@@ -93,90 +223,152 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 18px;
-            border-radius: 12px;
+            gap: 8px;
+            min-height: 48px;
+            padding: 0 18px;
+            border-radius: 14px;
             font: inherit;
-            cursor: pointer;
             text-decoration: none;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+        }
+
+        .button:hover,
+        button:hover {
+            transform: translateY(-1px);
         }
 
         .button-primary,
         button {
             border: 0;
-            background: var(--accent);
-            color: #fff;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+            color: #ffffff;
+            box-shadow: 0 16px 28px rgba(47, 125, 92, 0.24);
         }
 
         .button-secondary {
             border: 1px solid var(--line);
-            background: #fff;
+            background: rgba(255, 255, 255, 0.74);
             color: var(--ink);
         }
 
-        .stats {
+        .status-panel {
+            padding: 28px;
             display: grid;
-            gap: 16px;
+            gap: 18px;
         }
 
-        .stat {
-            padding: 20px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: #f7fbf8;
-        }
-
-        .stat-label {
-            color: var(--muted);
-            font-size: .92rem;
-            margin-bottom: 6px;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .grid {
+        .status-head {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
+            gap: 8px;
         }
 
+        .status-head h2,
         .feature-card h2,
-        .runtime-card h2,
         .demo-card h2 {
-            margin: 0 0 12px;
-            font-size: 1.35rem;
+            margin: 0;
+            font-size: 1.36rem;
         }
 
+        .status-head p,
         .feature-card p,
-        .runtime-card p,
         .demo-card p {
             color: var(--muted);
-            margin-bottom: 0;
-        }
-
-        .runtime-grid {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 12px 16px;
-            margin: 20px 0 0;
-        }
-
-        dt {
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        dd {
             margin: 0;
         }
 
-        form {
-            margin-top: 22px;
+        .status-list {
             display: grid;
             gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 15px 16px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.76);
+        }
+
+        .status-item dt {
+            margin: 0 0 4px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .status-item dd {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 84px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #edf9f3;
+            color: #16543b;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .section-label {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .feature-card {
+            padding: 24px;
+        }
+
+        .feature-card strong {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f2f8f5;
+            color: var(--accent);
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .lower-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+            gap: 22px;
+        }
+
+        .demo-card,
+        .info-card {
+            padding: 28px;
+        }
+
+        .demo-card form {
+            display: grid;
+            gap: 12px;
+            margin-top: 22px;
         }
 
         label {
@@ -187,116 +379,212 @@
         input,
         textarea {
             width: 100%;
-            padding: 12px 14px;
+            padding: 13px 14px;
             border: 1px solid var(--line);
-            border-radius: 12px;
-            font: inherit;
-            background: #fff;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.94);
             color: var(--ink);
+            font: inherit;
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 130px;
             resize: vertical;
         }
 
         .flash {
             margin-bottom: 16px;
             padding: 12px 14px;
-            border-radius: 12px;
-            background: #edf9f3;
+            border-radius: 14px;
             border: 1px solid #b7dfc9;
+            background: #edf9f3;
             color: #16543b;
         }
 
         .errors {
             margin-bottom: 16px;
             padding: 12px 14px;
-            border-radius: 12px;
-            background: #fff0f0;
+            border-radius: 14px;
             border: 1px solid #e0bcbc;
+            background: #fff0f0;
             color: var(--danger);
         }
 
-        .inline-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
+        .route-list {
+            display: grid;
+            gap: 12px;
             margin-top: 18px;
         }
 
-        .inline-links a {
-            color: var(--accent);
-            text-decoration: none;
+        .route-item {
+            display: grid;
+            gap: 3px;
+            padding: 14px 15px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.72);
         }
 
-        .inline-links a:hover {
-            text-decoration: underline;
+        .route-item strong {
+            font-size: 0.95rem;
         }
 
-        @media (max-width: 900px) {
+        .route-item span {
+            color: var(--muted);
+            font-size: 0.93rem;
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+            font-size: 0.94em;
+        }
+
+        @media (max-width: 980px) {
             .hero,
-            .grid {
+            .lower-grid,
+            .feature-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .hero-proof {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .shell {
+                padding: 20px 18px 64px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero-panel,
+            .status-panel,
+            .feature-card,
+            .demo-card,
+            .info-card {
+                padding: 22px;
+            }
+
+            h1 {
+                font-size: clamp(2.5rem, 16vw, 4rem);
             }
         }
     </style>
 </head>
 <body>
-<main>
-    <section class="hero">
-        <div class="card">
-            <div class="eyebrow">Wayfinder v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></div>
-            <h1>Build PHP apps with explicit structure, not framework magic.</h1>
-            <p class="subtitle">This is the default Wayfinder landing page. It proves the front controller, kernel, router, view layer, session middleware, and CSRF protection are installed and working.</p>
-            <div class="cta-row">
-                <a class="button button-secondary" href="/health">Health Check</a>
-                <a class="button button-primary" href="/health">Run Health Check</a>
-            </div>
-            <div class="inline-links">
-                <a href="/">Home</a>
-                <a href="/health">Health</a>
-            </div>
-        </div>
+<div class="shell">
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-mark">W</span>
+            <span class="brand-copy">
+                <span class="brand-name"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="brand-meta">PHP framework starter</span>
+            </span>
+        </a>
+        <nav class="topnav">
+            <span>v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></span>
+            <a href="/health">Health</a>
+            <a href="https://github.com/trafficinc/wayfinder-app">GitHub</a>
+        </nav>
+    </header>
 
-        <aside class="card">
-            <h2 style="margin:0 0 16px;">Live Runtime</h2>
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-label">HTTP Method</div>
-                    <div class="stat-value"><?= htmlspecialchars($method, ENT_QUOTES, 'UTF-8') ?></div>
+    <section class="hero">
+        <article class="panel hero-panel">
+            <div class="eyebrow">Wayfinder is installed</div>
+            <h1>Build in public code, not hidden framework layers.</h1>
+            <p class="lede">Wayfinder keeps the application surface explicit so developers and AI tools can reason about routing, requests, views, validation, and data access without digging through heavy framework indirection.</p>
+            <div class="cta-row">
+                <a class="button button-primary" href="/health">Run Health Check</a>
+                <a class="button button-secondary" href="#demo">See Request Demo</a>
+            </div>
+            <div class="hero-proof">
+                <div class="proof">
+                    <strong>Explicit HTTP</strong>
+                    <span>Requests, middleware, responses, and validation stay visible.</span>
                 </div>
-                <div class="stat">
-                    <div class="stat-label">Current Path</div>
-                    <div class="stat-value" style="font-size:1.35rem;word-break:break-word;"><?= htmlspecialchars($path, ENT_QUOTES, 'UTF-8') ?></div>
+                <div class="proof">
+                    <strong>Builder-first data</strong>
+                    <span>Use migrations and query builders without a heavy ORM surface.</span>
                 </div>
-                <div class="stat">
-                    <div class="stat-label">CSRF + Session</div>
-                    <div class="stat-value" style="font-size:1.35rem;">Active</div>
+                <div class="proof">
+                    <strong>App-owned starter</strong>
+                    <span>The first screen is disposable and easy to restyle.</span>
                 </div>
             </div>
+        </article>
+
+        <aside class="panel status-panel">
+            <div class="status-head">
+                <h2>Install Status</h2>
+                <p>This panel is here for one reason: to show the framework booted correctly before you replace the starter.</p>
+            </div>
+            <dl class="status-list">
+                <div class="status-item">
+                    <div>
+                        <dt>Framework</dt>
+                        <dd>Wayfinder v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></dd>
+                    </div>
+                    <span class="status-badge">Ready</span>
+                </div>
+                <div class="status-item">
+                    <div>
+                        <dt>Request Path</dt>
+                        <dd><?= htmlspecialchars($path, ENT_QUOTES, 'UTF-8') ?></dd>
+                    </div>
+                    <span class="status-badge"><?= htmlspecialchars($method, ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
+                <div class="status-item">
+                    <div>
+                        <dt>Session + CSRF</dt>
+                        <dd>Loaded through the web middleware group</dd>
+                    </div>
+                    <span class="status-badge">Active</span>
+                </div>
+            </dl>
         </aside>
     </section>
 
-    <section class="grid">
-        <article class="card feature-card">
-            <h2>HTTP Core</h2>
-            <p>Routes, middleware groups, request objects, validation redirects, CSRF protection, sessions, cookies, and auth all run through the same explicit kernel lifecycle.</p>
-        </article>
-        <article class="card feature-card">
-            <h2>Builder-First Data</h2>
-            <p>Use `DB::table(...)` style queries, migrations, rollback and refresh commands, and database-backed validation rules without committing the framework to a heavy ORM.</p>
-        </article>
-        <article class="card feature-card">
-            <h2>App-Owned Starter</h2>
-            <p>This page keeps its CSS inline on purpose, so the first screen is easy to replace or restyle without hunting through shared layout assets.</p>
-        </article>
+    <section>
+        <p class="section-label">Why Wayfinder</p>
+        <div class="feature-grid">
+            <article class="panel feature-card">
+                <strong>HTTP</strong>
+                <h2>One readable request lifecycle</h2>
+                <p>Kernel, router, middleware, form validation, CSRF, and responses run through one understandable path.</p>
+            </article>
+            <article class="panel feature-card">
+                <strong>Data</strong>
+                <h2>Builder-first database access</h2>
+                <p>Use <code>DB::table(...)</code>, migrations, rollback commands, and database-backed validation without committing the app to ORM magic.</p>
+            </article>
+            <article class="panel feature-card">
+                <strong>Modules</strong>
+                <h2>Feature packages stay app-owned</h2>
+                <p>Install packaged modules into <code>Modules/</code> while keeping the application bootstrap and domain flow visible.</p>
+            </article>
+            <article class="panel feature-card">
+                <strong>AI</strong>
+                <h2>Smaller code surface, clearer reasoning</h2>
+                <p>Wayfinder is designed so humans and AI tools can trace behavior quickly instead of sifting through hidden framework internals.</p>
+            </article>
+        </div>
     </section>
 
-    <section class="grid" style="grid-template-columns:1.2fr .8fr;">
-        <article class="card demo-card">
-            <h2>Interactive Demo</h2>
-            <p>This form stays on the landing page on purpose. It exercises CSRF protection, validation, flash data, old input, and redirect-back behavior in one place.</p>
+    <section class="lower-grid">
+        <article id="demo" class="panel demo-card">
+            <p class="section-label">Request Demo</p>
+            <h2>Prove the lifecycle is live</h2>
+            <p>This form is intentionally small. It exercises CSRF, validation, flash messages, old input, and redirect-back behavior from the default starter.</p>
             <?php if (is_string($flashMessage) && $flashMessage !== ''): ?>
                 <div class="flash"><?= htmlspecialchars($flashMessage, ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
@@ -306,27 +594,37 @@
             <form method="post" action="/contact">
                 <?= $form->csrfField() ?>
                 <input type="hidden" name="_redirect" value="/">
-                <label for="message">CSRF-Protected Demo Form</label>
-                <textarea id="message" name="message" placeholder="Post a short message to prove the request lifecycle is live."><?= htmlspecialchars((string) $form->old('message', '', 'contact'), ENT_QUOTES, 'UTF-8') ?></textarea>
-                <button type="submit">Submit</button>
+                <label for="message">Message</label>
+                <textarea id="message" name="message" placeholder="Submit a short message to verify the request lifecycle."><?= htmlspecialchars((string) $form->old('message', '', 'contact'), ENT_QUOTES, 'UTF-8') ?></textarea>
+                <button type="submit">Submit Demo Request</button>
             </form>
         </article>
 
-        <aside class="card runtime-card">
-            <h2>Starter Routes</h2>
-            <p>The default skeleton keeps the first-run app intentionally small and disposable. Domain features belong in the application, not in the framework starter.</p>
-            <dl class="runtime-grid">
-                <dt>Home</dt>
-                <dd>`/` landing page</dd>
-                <dt>Contact</dt>
-                <dd>`POST /contact` CSRF + validation demo</dd>
-                <dt>Health</dt>
-                <dd>`/health` request lifecycle check</dd>
-                <dt>Tests</dt>
-                <dd>PHPUnit bootstrap included</dd>
-            </dl>
+        <aside class="panel info-card">
+            <p class="section-label">Starter Surface</p>
+            <h2>Replace this page quickly</h2>
+            <p>The default starter stays intentionally small. Keep the framework proving itself on first load, then swap the page out for your actual product.</p>
+            <div class="route-list">
+                <div class="route-item">
+                    <strong><code>/</code></strong>
+                    <span>Framework landing page</span>
+                </div>
+                <div class="route-item">
+                    <strong><code>POST /contact</code></strong>
+                    <span>CSRF + validation + redirect-back demo</span>
+                </div>
+                <div class="route-item">
+                    <strong><code>/health</code></strong>
+                    <span>Request lifecycle check</span>
+                </div>
+                <div class="route-item">
+                    <strong><code>tests/</code></strong>
+                    <span>PHPUnit bootstrap included from the start</span>
+                </div>
+            </div>
+            <p class="footer-note">Keep the first screen inline and app-owned. That is the point of the starter.</p>
         </aside>
     </section>
-</main>
+</div>
 </body>
 </html>
