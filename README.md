@@ -280,6 +280,8 @@ php wayfinder module:uninstall auth
 
 Built-in aliases like `auth` come from the app's `config/modules.php` package map.
 
+Those aliases are application-level installer shortcuts, not package metadata. A package like `wayfinder/auth` should not carry the host app's `auth` alias mapping inside the package repo.
+
 Generic packaged modules can be installed with:
 
 ```bash
@@ -300,6 +302,8 @@ php wayfinder module:uninstall MyModule
 ```
 
 The installer uses Composer for packaged modules and then creates a symlink into the app's `Modules/` directory.
+
+For auth-style modules, the post-login and post-registration destination should remain application-controlled. A package like `wayfinder/auth` can read `auth.home_route`, but the host app decides whether that should be `/dashboard`, `/projects`, or another authenticated landing page.
 
 ## Module Distribution
 
@@ -324,6 +328,8 @@ wayfinder-auth/
   database/migrations/
   README.md
 ```
+
+Keep foundational app schema out of the module package. For example, the `users` table should stay in the starter app or host application, while a module like `wayfinder/auth` should only own auth-specific tables if it truly needs them.
 
 Recommended `composer.json` shape:
 
