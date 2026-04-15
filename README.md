@@ -369,10 +369,12 @@ use Wayfinder\Routing\Router;
 use Wayfinder\Support\Config;
 use Wayfinder\Support\Container;
 use Wayfinder\Support\EventDispatcher;
+use Wayfinder\Support\Events;
 
 $config = Config::fromDirectory(__DIR__ . '/../config');
 $container = new Container();
 $events = new EventDispatcher();
+Events::setDispatcher($events);
 
 $container->instance(Config::class, $config);
 $container->singleton(Database::class, fn () => new Database($config->get('database.default')));
@@ -380,6 +382,18 @@ $container->singleton(Database::class, fn () => new Database($config->get('datab
 $router = new Router($container, $events, 'App\\Controllers\\');
 
 return new AppKernel($router);
+```
+
+Once the dispatcher is registered, application and module code can emit domain events with the global helper:
+
+```php
+event('cart.submitted', $cart);
+event('order.created', $order);
+event('rfq.submitted', $rfq);
+
+listen('order.created', function (array $order): void {
+    // send mail, write audit log, enqueue follow-up work
+});
 ```
 
 ## Sessions, Cookies, and Auth

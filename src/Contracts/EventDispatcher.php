@@ -6,6 +6,8 @@ namespace Wayfinder\Contracts;
 
 interface EventDispatcher
 {
+    public function listen(string $event, callable $listener): void;
+
     /**
      * @param array<int|string, mixed> $payload
      */

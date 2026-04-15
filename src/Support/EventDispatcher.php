@@ -13,11 +13,9 @@ final class EventDispatcher implements EventDispatcherContract
      */
     private array $listeners = [];
 
-    public function listen(string $event, callable $listener): self
+    public function listen(string $event, callable $listener): void
     {
         $this->listeners[$event][] = $listener;
-
-        return $this;
     }
 
     public function dispatch(string $event, array $payload = []): void
