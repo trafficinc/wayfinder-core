@@ -858,7 +858,7 @@ DB::table('users')->insert([
 
 DB::table('users')
     ->where('email', 'ron@example.com')
-    ->update(['name' => 'Ron Bailey']);
+    ->update(['name' => 'Ron Biuya']);
 
 $emails = DB::table('users')
     ->where(function ($query) {
@@ -936,6 +936,67 @@ $paginator = new Paginator($items, $total, $perPage, $page);
 - `to()`
 
 `Paginator` does not execute queries itself. The repository or service layer is still responsible for running the count query and the paged item query.
+
+#### Example pagination display in the view, just show it dont change code
+
+```php
+  <?php if ($paginator->hasPages()): ?>
+      <nav class="pagination" aria-label="Results pagination">
+          <?php if ($paginator->hasPreviousPage()): ?>
+              <a href="/products?page=<?= $paginator->previousPage() ?>">Previous</a>
+          <?php endif; ?>
+
+          <span>
+              Showing <?= $paginator->from() ?>-<?= $paginator->to() ?>
+              of <?= $paginator->total() ?>
+          </span>
+
+          <?php for ($page = 1; $page <= $paginator->lastPage(); $page++): ?>
+              <?php if ($page === $paginator->currentPage()): ?>
+                  <strong><?= $page ?></strong>
+              <?php else: ?>
+                  <a href="/products?page=<?= $page ?>"><?= $page ?></a>
+              <?php endif; ?>
+          <?php endfor; ?>
+
+          <?php if ($paginator->hasNextPage()): ?>
+              <a href="/products?page=<?= $paginator->nextPage() ?>">Next</a>
+          <?php endif; ?>
+      </nav>
+  <?php endif; ?>
+
+  // If you need filters preserved:
+
+  <?php
+  $pageHref = static function (int $page) use ($filters): string {
+      return '/products?' . http_build_query([
+          'q' => $filters['q'] ?? '',
+          'category' => $filters['category'] ?? '',
+          'page' => $page,
+      ]);
+  };
+  ?>
+  ```
+
+```php
+  <?php if ($paginator->hasPages()): ?>
+      <nav class="pagination" aria-label="Results pagination">
+          <?php if ($paginator->hasPreviousPage()): ?>
+              <a href="<?= e($pageHref($paginator->previousPage())) ?>">Previous</a>
+          <?php endif; ?>
+
+          <?php for ($page = 1; $page <= $paginator->lastPage(); $page++): ?>
+              <a href="<?= e($pageHref($page)) ?>">
+                  <?= $page ?>
+              </a>
+          <?php endfor; ?>
+
+          <?php if ($paginator->hasNextPage()): ?>
+              <a href="<?= e($pageHref($paginator->nextPage())) ?>">Next</a>
+          <?php endif; ?>
+      </nav>
+  <?php endif; ?>
+```
 
 Use `DB::transaction()` to wrap multi-step workflows. It commits on success and rolls back on any exception, which is then re-thrown:
 
