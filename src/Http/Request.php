@@ -323,6 +323,7 @@ class Request
             $ruleset = is_array($fieldRules) ? $fieldRules : explode('|', $fieldRules);
             $isPresent = array_key_exists($field, $data);
             $isNullable = in_array('nullable', $ruleset, true);
+            $isStringRule = in_array('string', $ruleset, true);
             $isEmpty = $value === null || $value === '' || (is_array($value) && count($value) === 0);
 
             if ($isEmpty) {
@@ -377,12 +378,14 @@ class Request
                     $min = isset($parameters[0]) ? (float) $parameters[0] : 0;
                     $fail = match (true) {
                         is_array($value) => count($value) < $min,
+                        $isStringRule => mb_strlen((string) $value) < $min,
                         is_numeric($value) => (float) $value < $min,
                         default => mb_strlen((string) $value) < $min,
                     };
                     if ($fail) {
                         $errors[$field][] = $messages["{$field}.min"] ?? match (true) {
                             is_array($value) => "This field must have at least {$parameters[0]} items.",
+                            $isStringRule => "This field must be at least {$parameters[0]} characters.",
                             is_numeric($value) => "This field must be at least {$parameters[0]}.",
                             default => "This field must be at least {$parameters[0]} characters.",
                         };
@@ -393,12 +396,14 @@ class Request
                     $max = isset($parameters[0]) ? (float) $parameters[0] : PHP_FLOAT_MAX;
                     $fail = match (true) {
                         is_array($value) => count($value) > $max,
+                        $isStringRule => mb_strlen((string) $value) > $max,
                         is_numeric($value) => (float) $value > $max,
                         default => mb_strlen((string) $value) > $max,
                     };
                     if ($fail) {
                         $errors[$field][] = $messages["{$field}.max"] ?? match (true) {
                             is_array($value) => "This field must not have more than {$parameters[0]} items.",
+                            $isStringRule => "This field must not exceed {$parameters[0]} characters.",
                             is_numeric($value) => "This field must not be greater than {$parameters[0]}.",
                             default => "This field must not exceed {$parameters[0]} characters.",
                         };

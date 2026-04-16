@@ -234,6 +234,21 @@ final class ValidationTest extends TestCase
         self::assertSame('Ron', $validated['name']);
     }
 
+    public function testMaxRuleUsesStringLengthWhenStringRuleIsPresentOnNumericLookingValue(): void
+    {
+        $validated = $this->validate(['postal_code' => 'required|string|max:20'], ['postal_code' => '90210']);
+        self::assertSame('90210', $validated['postal_code']);
+    }
+
+    public function testMaxRuleFailsOnStringLengthWhenStringRuleIsPresentOnNumericLookingValue(): void
+    {
+        $this->assertValidationFails(
+            ['postal_code' => 'required|string|max:5'],
+            ['postal_code' => '123456'],
+            'postal_code',
+        );
+    }
+
     public function testMaxRuleForNumericValue(): void
     {
         $this->assertValidationFails(['score' => 'required|numeric|max:100'], ['score' => '101'], 'score');

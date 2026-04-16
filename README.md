@@ -875,6 +875,68 @@ $rows = DB::raw(
 );
 ```
 
+### Pagination
+
+Wayfinder exposes two pagination layers:
+
+- low-level query paging through `limit`, `offset`, and `forPage`
+- a small immutable `Wayfinder\Pagination\Paginator` value object for returning paged result metadata to application code and views
+
+Use `forPage()` when you already know the page size and only need a query slice:
+
+```php
+<?php
+
+use Wayfinder\Database\DB;
+
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 8;
+
+$users = DB::table('users')
+    ->where('status', 'active')
+    ->orderBy('name')
+    ->forPage($page, $perPage)
+    ->get();
+```
+
+If the UI also needs total counts and next/previous page state, pair the paged query with a `Paginator`:
+
+```php
+<?php
+
+use Wayfinder\Database\DB;
+use Wayfinder\Pagination\Paginator;
+
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 8;
+
+$baseQuery = DB::table('users')->where('status', 'active');
+$total = (clone $baseQuery)->count();
+$items = (clone $baseQuery)
+    ->orderBy('name')
+    ->forPage($page, $perPage)
+    ->get();
+
+$paginator = new Paginator($items, $total, $perPage, $page);
+```
+
+`Paginator` exposes:
+
+- `items()`
+- `total()`
+- `perPage()`
+- `currentPage()`
+- `lastPage()`
+- `hasPages()`
+- `hasPreviousPage()`
+- `hasNextPage()`
+- `previousPage()`
+- `nextPage()`
+- `from()`
+- `to()`
+
+`Paginator` does not execute queries itself. The repository or service layer is still responsible for running the count query and the paged item query.
+
 Use `DB::transaction()` to wrap multi-step workflows. It commits on success and rolls back on any exception, which is then re-thrown:
 
 ```php
