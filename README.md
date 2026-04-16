@@ -196,6 +196,32 @@ $errors = $request->errors('login');
 $email = $request->old('email', '', 'login');
 ```
 
+Wayfinder also autoloads a small set of plain PHP template helpers:
+
+- `e($value)` for HTML escaping
+- `attrs([...])` for rendering HTML attributes
+- `checked($current, $expected = true, $strict = false)`
+- `selected($current, $expected = true, $strict = false)`
+- `disabled($condition = true)`
+
+Examples:
+
+```php
+<h1><?= e($title) ?></h1>
+
+<a <?= attrs([
+    'href' => '/catalog',
+    'class' => ['btn', 'btn-primary'],
+    'data-id' => 42,
+]) ?>>Catalog</a>
+
+<input type="checkbox" name="terms" value="1" <?= checked($request->old('terms'), '1') ?>>
+
+<option value="card" <?= selected($request->old('payment_option'), 'card') ?>>Card</option>
+
+<button type="submit" <?= disabled($isLocked) ?>>Save</button>
+```
+
 ## Bootstrap and configuration
 
 Wayfinder now supports explicit app bootstrap through a small set of support services:

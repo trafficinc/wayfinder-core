@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Wayfinder\Tests\Support;
+
+use PHPUnit\Framework\TestCase;
+
+final class ViewHelpersTest extends TestCase
+{
+    public function test_e_escapes_html_special_characters(): void
+    {
+        self::assertSame(
+            '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;',
+            \e('<script>alert("x")</script>'),
+        );
+    }
+
+    public function test_e_returns_empty_string_for_null(): void
+    {
+        self::assertSame('', \e(null));
+    }
+
+    public function test_attrs_renders_scalar_and_boolean_attributes(): void
+    {
+        self::assertSame(
+            'href="/catalog" disabled data-id="42"',
+            \attrs([
+                'href' => '/catalog',
+                'disabled' => true,
+                'hidden' => false,
+                'data-id' => 42,
+            ]),
+        );
+    }
+
+    public function test_attrs_joins_array_values_and_escapes_output(): void
+    {
+        self::assertSame(
+            'class="btn btn-primary" title="A &quot;quote&quot;"',
+            \attrs([
+                'class' => ['btn', null, 'btn-primary', false],
+                'title' => 'A "quote"',
+            ]),
+        );
+    }
+
+    public function test_attrs_skips_invalid_or_unsupported_values(): void
+    {
+        self::assertSame(
+            'aria-label="Open"',
+            \attrs([
+                'bad key!' => 'ignored',
+                'config' => new \stdClass(),
+                'aria-label' => 'Open',
+            ]),
+        );
+    }
+
+    public function test_checked_renders_attribute_when_values_match(): void
+    {
+        self::assertSame('checked', \checked('card', 'card'));
+        self::assertSame('', \checked('card', 'bank'));
+    }
+
+    public function test_checked_supports_array_values(): void
+    {
+        self::assertSame('checked', \checked(['red', 'blue'], 'blue'));
+        self::assertSame('', \checked(['red', 'blue'], 'green'));
+    }
+
+    public function test_selected_renders_attribute_when_values_match(): void
+    {
+        self::assertSame('selected', \selected(2, '2'));
+        self::assertSame('', \selected(2, '2', true));
+    }
+
+    public function test_disabled_renders_attribute_when_true(): void
+    {
+        self::assertSame('disabled', \disabled());
+        self::assertSame('', \disabled(false));
+    }
+}
