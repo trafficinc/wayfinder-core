@@ -631,6 +631,11 @@ $router->group([
 $url = $router->urlFor('hello.show', ['name' => 'ron']);
 ```
 
+```php
+$router->get('/profile', [AccountController::class, 'profile'], 'profile');
+$router->post('/password', [AccountController::class, 'savePassword'], 'password.save');
+```
+
 If no route matches, the router returns a 404 response.
 
 ## Testing
