@@ -1,5 +1,4 @@
-# Stackmint
-
+# Wayfinder Core
 Core repository for the Stackmint PHP framework.
 
 This repo is intentionally kept separate from the test application. The framework is being built around explicit wiring and no hidden framework magic.
