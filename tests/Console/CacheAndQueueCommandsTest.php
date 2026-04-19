@@ -7,6 +7,8 @@ namespace Wayfinder\Tests\Console;
 use PHPUnit\Framework\TestCase;
 use Wayfinder\Console\ConfigCacheCommand;
 use Wayfinder\Console\ConfigClearCommand;
+use Wayfinder\Console\QueueRecoverCommand;
+use Wayfinder\Console\QueueStatusCommand;
 use Wayfinder\Console\QueueWorkCommand;
 use Wayfinder\Console\RouteCacheCommand;
 use Wayfinder\Console\RouteClearCommand;
@@ -342,6 +344,32 @@ final class CacheAndQueueCommandsTest extends TestCase
         self::assertSame(0, $queue->size());
         self::assertSame(0, $queue->processingSize());
         self::assertSame(1, $queue->failedSize());
+    }
+
+    public function testQueueRecoverMovesStaleJobsBackToPending(): void
+    {
+        $queue = new FileQueue($this->tempDir . '/queue');
+        $queue->push(CacheQueueCountingJob::class);
+        $job = $queue->pop();
+        self::assertIsArray($job);
+
+        touch($job['__file'], time() - 7200);
+
+        $code = (new QueueRecoverCommand($queue))->handle([3600]);
+
+        self::assertSame(0, $code);
+        self::assertSame(1, $queue->size());
+        self::assertSame(0, $queue->processingSize());
+    }
+
+    public function testQueueStatusReturnsZero(): void
+    {
+        $queue = new FileQueue($this->tempDir . '/queue');
+        $queue->push(CacheQueueCountingJob::class);
+
+        $code = (new QueueStatusCommand($queue))->handle();
+
+        self::assertSame(0, $code);
     }
 
     // =========================================================================

@@ -24,7 +24,7 @@ final class NewAppCommandTest extends TestCase
 
     public function testCreatesNewAppFromSkeletonAndRewritesComposerName(): void
     {
-        $starter = $this->tempDir . '/wayfinder-app';
+        $starter = $this->tempDir . '/stackmint';
         mkdir($starter . '/app', 0777, true);
         file_put_contents($starter . '/composer.json', json_encode([
             'name' => 'wayfinder/app',
@@ -60,7 +60,7 @@ final class NewAppCommandTest extends TestCase
 
     public function testRefusesToOverwriteExistingDirectory(): void
     {
-        $starter = $this->tempDir . '/wayfinder-app';
+        $starter = $this->tempDir . '/stackmint';
         mkdir($starter, 0777, true);
         file_put_contents($starter . '/composer.json', "{}\n");
         mkdir($this->tempDir . '/my-app', 0777, true);
@@ -76,7 +76,7 @@ final class NewAppCommandTest extends TestCase
 
     public function testRequiresTargetDirectoryArgument(): void
     {
-        $command = new NewAppCommand($this->tempDir . '/wayfinder-app', $this->tempDir);
+        $command = new NewAppCommand($this->tempDir . '/stackmint', $this->tempDir);
 
         ob_start();
         $exit = $command->handle();

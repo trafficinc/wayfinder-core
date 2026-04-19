@@ -19,7 +19,7 @@ final class NewAppCommand implements Command
 
     public function description(): string
     {
-        return 'Create a new Wayfinder application from the default skeleton.';
+        return 'Create a new Stackmint application from the default skeleton.';
     }
 
     public function handle(array $arguments = []): int
@@ -57,7 +57,7 @@ final class NewAppCommand implements Command
         $this->copyDirectory($source, $target);
         $this->rewriteComposerPackageName($target, basename($target));
 
-        fwrite(STDOUT, sprintf("Created Wayfinder app in [%s].\n", $target));
+        fwrite(STDOUT, sprintf("Created Stackmint app in [%s].\n", $target));
         fwrite(STDOUT, "Next steps:\n");
         fwrite(STDOUT, sprintf("  cd %s\n", basename($target)));
         fwrite(STDOUT, "  cp .env.example .env\n");
@@ -146,6 +146,6 @@ final class NewAppCommand implements Command
         $normalized = preg_replace('/[^a-z0-9._-]+/', '-', $normalized) ?? $normalized;
         $normalized = trim($normalized, '-');
 
-        return $normalized === '' ? 'wayfinder-app' : $normalized;
+        return $normalized === '' ? 'stackmint' : $normalized;
     }
 }

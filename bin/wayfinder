@@ -17,6 +17,6 @@ if (! is_file($autoload)) {
 require $autoload;
 
 $application = new Application('0.1.0');
-$application->add(new NewAppCommand(__DIR__ . '/../../wayfinder-app', getcwd()));
+$application->add(new NewAppCommand(__DIR__ . '/../../stackmint', getcwd()));
 
 exit($application->run($argv));

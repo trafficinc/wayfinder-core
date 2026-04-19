@@ -494,13 +494,13 @@
         <nav class="topnav">
             <span>v<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?></span>
             <a href="/health">Health</a>
-            <a href="https://github.com/trafficinc/wayfinder-app">GitHub</a>
+            <a href="https://github.com/trafficinc/stackmint">GitHub</a>
         </nav>
     </header>
 
     <section class="hero">
         <article class="panel hero-panel">
-            <div class="eyebrow">Wayfinder is installed</div>
+            <div class="eyebrow">Stackmint is installed</div>
             <h1>Build in public code, not hidden framework layers.</h1>
             <p class="lede">Wayfinder keeps the application surface explicit so developers and AI tools can reason about routing, requests, views, validation, and data access without digging through heavy framework indirection.</p>
             <div class="cta-row">
@@ -555,7 +555,7 @@
     </section>
 
     <section>
-        <p class="section-label">Why Wayfinder</p>
+        <p class="section-label">Why Stackmint</p>
         <div class="feature-grid">
             <article class="panel feature-card">
                 <strong>HTTP</strong>

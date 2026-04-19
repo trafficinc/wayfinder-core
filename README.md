@@ -1,14 +1,14 @@
-# Wayfinder
+# Stackmint
 
-Core repository for the Wayfinder PHP framework.
+Core repository for the Stackmint PHP framework.
 
 This repo is intentionally kept separate from the test application. The framework is being built around explicit wiring and no hidden framework magic.
 
-For package naming, starter-app distribution, and local Composer override workflow, see `docs/local-development.md`. This is the core package, to install the framework go here: [wayfinder/app](https://github.com/trafficinc/wayfinder-app)
+The runtime package is currently published as `wayfinder/core`, and the namespaces remain `Wayfinder\\...`. For package naming, starter distribution, and local Composer override workflow, see `docs/local-development.md`. To install the framework starter, go here: [trafficinc/stackmint](https://github.com/trafficinc/stackmint)
 
 ## Current state
 
-Wayfinder currently includes:
+Stackmint currently includes:
 
 - an explicit request lifecycle through `Wayfinder\Foundation\AppKernel`
 - HTTP request and response objects in `Wayfinder\Http`
@@ -306,7 +306,7 @@ php wayfinder module:uninstall auth
 
 Built-in aliases like `auth` come from the app's `config/modules.php` package map.
 
-Those aliases are application-level installer shortcuts, not package metadata. A package like `wayfinder/auth` should not carry the host app's `auth` alias mapping inside the package repo.
+Those aliases are application-level installer shortcuts, not package metadata. A package like `trafficinc/stackmint-auth` should not carry the host app's `auth` alias mapping inside the package repo.
 
 Generic packaged modules can be installed with:
 
@@ -329,7 +329,7 @@ php wayfinder module:uninstall MyModule
 
 The installer uses Composer for packaged modules and then creates a symlink into the app's `Modules/` directory.
 
-For auth-style modules, the post-login and post-registration destination should remain application-controlled. A package like `wayfinder/auth` can read `auth.home_route`, but the host app decides whether that should be `/dashboard`, `/projects`, or another authenticated landing page.
+For auth-style modules, the post-login and post-registration destination should remain application-controlled. A package like `trafficinc/stackmint-auth` can read `auth.home_route`, but the host app decides whether that should be `/dashboard`, `/projects`, or another authenticated landing page.
 
 ## Module Distribution
 
@@ -340,7 +340,7 @@ For GitHub distribution, the recommended path is to package a module as its own 
 Recommended structure for a distributable module package:
 
 ```text
-wayfinder-auth/
+stackmint-auth/
   composer.json
   module.php
   ModuleServiceProvider.php
@@ -355,13 +355,13 @@ wayfinder-auth/
   README.md
 ```
 
-Keep foundational app schema out of the module package. For example, the `users` table should stay in the starter app or host application, while a module like `wayfinder/auth` should only own auth-specific tables if it truly needs them.
+Keep foundational app schema out of the module package. For example, the `users` table should stay in the starter app or host application, while a module like `trafficinc/stackmint-auth` should only own auth-specific tables if it truly needs them.
 
 Recommended `composer.json` shape:
 
 ```json
 {
-  "name": "wayfinder/auth",
+  "name": "trafficinc/stackmint-auth",
   "type": "library",
   "require": {
     "php": "^8.2",
@@ -479,7 +479,7 @@ php wayfinder make:session-table
 
 ## Starter Landing Page
 
-Wayfinder now keeps the default starter landing page in framework-owned stubs instead of only in `test-app`:
+Stackmint now keeps the default starter landing page in framework-owned stubs instead of only in `test-app`:
 
 - `framework/stubs/starter-app/app/Controllers/HomeController.php`
 - `framework/stubs/starter-app/app/Views/home/index.php`
@@ -493,7 +493,7 @@ Create a new application from the default skeleton with:
 wayfinder new my-app
 ```
 
-That copies `wayfinder-app/` into `./my-app`, rewrites the app package name in `composer.json`, and leaves the starter files fully app-owned. For a published starter repo, users should clone `trafficinc/wayfinder-app` directly to begin a new project. After scaffolding:
+That copies the local starter scaffold into `./my-app`, rewrites the app package name in `composer.json`, and leaves the starter files fully app-owned. For a published starter repo, users should clone `trafficinc/stackmint` directly to begin a new project. After scaffolding:
 
 ```bash
 cd my-app
@@ -764,7 +764,9 @@ Supported operations:
 Wayfinder includes a small queue layer with:
 
 - `Wayfinder\Queue\Queue`
+- `Wayfinder\Queue\DatabaseQueue`
 - `Wayfinder\Queue\FileQueue`
+- `Wayfinder\Queue\JobDispatcher`
 - `Wayfinder\Queue\Worker`
 - `Wayfinder\Queue\Job`
 
@@ -784,15 +786,79 @@ final class SendDemoMailJob implements Job
 }
 ```
 
+Apps register the generic queue services and CLI commands through `Wayfinder\Queue\QueueBootstrapper`, which binds:
+
+- `Wayfinder\Queue\Queue`
+- `Wayfinder\Queue\JobDispatcher`
+- `Wayfinder\Queue\Worker`
+- `queue:work`
+- `queue:recover`
+- `queue:status`
+
 Queue usage stays explicit:
 
 ```php
-$queue->push(SendDemoMailJob::class, [
+$dispatcher->dispatch(SendDemoMailJob::class, [
     'to' => 'user@example.com',
 ]);
 ```
 
-`Wayfinder\Queue\Worker` processes one queued job at a time. The test app exposes that through `php wayfinder queue:work`.
+Queue drivers supported today are:
+
+- `sync`
+- `file`
+- `database`
+- `redis`
+
+Typical app config uses an environment-driven default:
+
+```php
+<?php
+
+return [
+    'default' => $_ENV['QUEUE_CONNECTION'] ?? 'sync',
+    'max_attempts' => (int) ($_ENV['QUEUE_MAX_ATTEMPTS'] ?? 3),
+    'connections' => [
+        'sync' => [
+            'driver' => 'sync',
+        ],
+        'file' => [
+            'driver' => 'file',
+            'path' => __DIR__ . '/../storage/framework/queue',
+        ],
+        'database' => [
+            'driver' => 'database',
+            'table' => $_ENV['QUEUE_DATABASE_TABLE'] ?? 'jobs',
+        ],
+        'redis' => [
+            'driver' => 'redis',
+            'host' => $_ENV['QUEUE_REDIS_HOST'] ?? '127.0.0.1',
+            'port' => (int) ($_ENV['QUEUE_REDIS_PORT'] ?? 6379),
+            'database' => (int) ($_ENV['QUEUE_REDIS_DATABASE'] ?? 0),
+            'password' => $_ENV['QUEUE_REDIS_PASSWORD'] ?? null,
+            'prefix' => $_ENV['QUEUE_REDIS_PREFIX'] ?? 'wayfinder_queue',
+            'timeout' => (float) ($_ENV['QUEUE_REDIS_TIMEOUT'] ?? 1.5),
+        ],
+    ],
+];
+```
+
+`QUEUE_CONNECTION=sync` runs jobs immediately inside the request. `file`, `database`, and `redis` queue them for later worker processing.
+
+The Redis driver requires the `ext-redis` PHP extension and a reachable Redis server.
+
+`Wayfinder\Queue\Worker` processes one queued job at a time. Apps that register the bootstrapper automatically get:
+
+- `php wayfinder queue:work`
+- `php wayfinder queue:recover`
+- `php wayfinder queue:status`
+
+If you use the database queue, generate the migration and run it first:
+
+```bash
+php wayfinder make:queue-table
+php wayfinder migrate
+```
 
 ## Mail
 

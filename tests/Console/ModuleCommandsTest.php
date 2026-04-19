@@ -32,13 +32,13 @@ final class ModuleCommandsTest extends TestCase
         $runner = function (array $command, string $cwd) use ($app): int {
             self::assertSame($app, $cwd);
 
-            if ($command === ['composer', 'config', 'repositories.wayfinder-auth', 'vcs', 'https://github.com/trafficinc/wayfinder-auth']) {
+            if ($command === ['composer', 'config', 'repositories.trafficinc-stackmint-auth', 'vcs', 'https://github.com/trafficinc/stackmint-auth']) {
                 return 0;
             }
 
-            if ($command === ['composer', 'require', 'wayfinder/auth']) {
-                mkdir($app . '/vendor/wayfinder/auth', 0777, true);
-                file_put_contents($app . '/vendor/wayfinder/auth/module.php', "<?php\nreturn [];\n");
+            if ($command === ['composer', 'require', 'trafficinc/stackmint-auth']) {
+                mkdir($app . '/vendor/trafficinc/stackmint-auth', 0777, true);
+                file_put_contents($app . '/vendor/trafficinc/stackmint-auth/module.php', "<?php\nreturn [];\n");
 
                 return 0;
             }
@@ -51,9 +51,9 @@ final class ModuleCommandsTest extends TestCase
 
         $command = new ModuleInstallCommand($app, $modules, [
             'auth' => [
-                'package' => 'wayfinder/auth',
+                'package' => 'trafficinc/stackmint-auth',
                 'module' => 'Auth',
-                'repository' => 'https://github.com/trafficinc/wayfinder-auth',
+                'repository' => 'https://github.com/trafficinc/stackmint-auth',
             ],
         ], $runner, $stdout, $stderr);
 
@@ -61,7 +61,7 @@ final class ModuleCommandsTest extends TestCase
 
         self::assertSame(0, $exit);
         self::assertTrue(is_link($modules . '/Auth'));
-        self::assertSame('../vendor/wayfinder/auth', readlink($modules . '/Auth'));
+        self::assertSame('../vendor/trafficinc/stackmint-auth', readlink($modules . '/Auth'));
         unlink($modules . '/Auth');
 
         fclose($stdout);
@@ -104,8 +104,8 @@ final class ModuleCommandsTest extends TestCase
         $app = $this->tempDir . '/app';
         $modules = $app . '/Modules';
         mkdir($modules, 0777, true);
-        mkdir($app . '/vendor/wayfinder/auth', 0777, true);
-        symlink('../../vendor/wayfinder/auth', $modules . '/Auth');
+        mkdir($app . '/vendor/trafficinc/stackmint-auth', 0777, true);
+        symlink('../../vendor/trafficinc/stackmint-auth', $modules . '/Auth');
 
         $calls = [];
         $runner = static function (array $command, string $cwd) use (&$calls, $app): int {
@@ -120,9 +120,9 @@ final class ModuleCommandsTest extends TestCase
 
         $command = new ModuleUninstallCommand($app, $modules, [
             'auth' => [
-                'package' => 'wayfinder/auth',
+                'package' => 'trafficinc/stackmint-auth',
                 'module' => 'Auth',
-                'repository' => 'https://github.com/trafficinc/wayfinder-auth',
+                'repository' => 'https://github.com/trafficinc/stackmint-auth',
             ],
         ], $runner, $stdout, $stderr);
 
@@ -131,8 +131,8 @@ final class ModuleCommandsTest extends TestCase
         self::assertSame(0, $exit);
         self::assertFalse(file_exists($modules . '/Auth'));
         self::assertSame([
-            ['composer', 'remove', 'wayfinder/auth'],
-            ['composer', 'config', '--unset', 'repositories.wayfinder-auth'],
+            ['composer', 'remove', 'trafficinc/stackmint-auth'],
+            ['composer', 'config', '--unset', 'repositories.trafficinc-stackmint-auth'],
         ], $calls);
 
         fclose($stdout);

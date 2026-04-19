@@ -12,7 +12,7 @@ final class HealthController
     public function health(Request $request): Response
     {
         return Response::text(
-            "Wayfinder app is running.\n"
+            "Stackmint app is running.\n"
             . sprintf("Method: %s\n", $request->method())
             . sprintf("Path: %s\n", $request->path())
         );
