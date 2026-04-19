@@ -4,7 +4,7 @@ Core repository for the Stackmint PHP framework.
 
 This repo is intentionally kept separate from the test application. The framework is being built around explicit wiring and no hidden framework magic.
 
-The runtime package is currently published as `wayfinder/core`, and the namespaces remain `Wayfinder\\...`. For package naming, starter distribution, and local Composer override workflow, see `docs/local-development.md`. To install the framework starter, go here: [trafficinc/stackmint](https://github.com/trafficinc/stackmint)
+The runtime package is currently published as `wayfinder/core`, and the namespaces remain `Wayfinder\\...`. For package naming, starter distribution, and local Composer override workflow. To install the framework starter, go here: [trafficinc/stackmint](https://github.com/trafficinc/stackmint)
 
 ## Current state
 
