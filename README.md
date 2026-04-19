@@ -203,6 +203,17 @@ Wayfinder also autoloads a small set of plain PHP template helpers:
 - `checked($current, $expected = true, $strict = false)`
 - `selected($current, $expected = true, $strict = false)`
 - `disabled($condition = true)`
+- `js_escape($value)` for safe inline JavaScript values
+- `css_escape($value)` for CSS-safe identifiers
+- `url_escape($value)` for query parameter encoding
+- `url_with_query($base, $params)` for appending filtered query strings
+- `is_safe_redirect($url, $allowedHost)` for basic redirect host checks
+- `str_truncate($value, $limit, $end = '...')`
+- `slugify($value, $separator = '-')`
+- `array_get($array, $key, $default = null)` using dot notation
+- `array_pluck($items, $key)` for arrays or objects
+- `class_names(...$args)` for conditional class strings
+- `html_tag($tag, $attributes = [], $content = null)` for rendering tags
 
 Examples:
 
@@ -220,6 +231,24 @@ Examples:
 <option value="card" <?= selected($request->old('payment_option'), 'card') ?>>Card</option>
 
 <button type="submit" <?= disabled($isLocked) ?>>Save</button>
+
+<script>
+    const state = <?= js_escape($payload) ?>;
+</script>
+
+<div class="<?= class_names('alert', ['alert-error' => $hasError, 'hidden' => ! $isVisible]) ?>"></div>
+
+<a href="<?= e(url_with_query('/search', ['q' => $query, 'page' => $page])) ?>">Search</a>
+
+<span><?= e(str_truncate($post['title'], 40)) ?></span>
+
+<div id="<?= e(css_escape($componentId)) ?>"></div>
+
+<?php $city = array_get($profile, 'address.city', 'Unknown'); ?>
+
+<?php $names = array_pluck($users, 'name'); ?>
+
+<?= html_tag('img', ['src' => '/logo.png', 'alt' => 'Logo']) ?>
 ```
 
 ## Bootstrap and configuration
