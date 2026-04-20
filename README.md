@@ -5,6 +5,114 @@ This repo is intentionally kept separate from the test application. The framewor
 
 The runtime package is currently published as `wayfinder/core`, and the namespaces remain `Wayfinder\\...`. For package naming, starter distribution, and local Composer override workflow. To install the framework starter, go here: [trafficinc/stackmint](https://github.com/trafficinc/stackmint)
 
+## Model Architecture
+
+Wayfinder's database architecture is intentionally small:
+
+- Use a `Model` for single-table entity reads and writes.
+- Use a `Query` for joins, aggregates, grouped reads, and other report-style SQL.
+- Use a DTO when a `Query` returns a read shape that is not a single table entity.
+
+The rule of thumb is:
+
+- `Model`: "one table, entity behavior, CRUD"
+- `Query`: "read model, reporting shape, multiple tables or aggregate SQL"
+- `DTO`: "typed output from a query"
+
+Examples from `task-app`:
+
+- Model: `task-app/Modules/Tasks/Models/Task.php`
+- Query: `task-app/Modules/Tasks/Queries/TaskListQuery.php`
+- DTO: `task-app/Modules/Tasks/DTOs/TaskListItemData.php`
+
+Typical model usage:
+
+```php
+<?php
+
+$task = Task::ownedByUser($taskId, $userId);
+
+if ($task === null) {
+    return Response::notFound('Task not found.');
+}
+
+$task->update([
+    'title' => $data['title'],
+    'due_date' => $data['due_date'],
+]);
+```
+
+Typical query usage:
+
+```php
+<?php
+
+$tasks = $taskListQuery->execute($userId, $projectFilter, $statusFilter, $today);
+```
+
+Inside a query class, prefer the DTO helpers on `Wayfinder\Database\Query`:
+
+```php
+<?php
+
+return $this->many(TaskListItemData::class, $sql, $bindings);
+```
+
+### Generators
+
+Wayfinder includes small generators for the database architecture:
+
+```bash
+php wayfinder make:model User
+php wayfinder make:query TaskList
+php wayfinder make:dto TaskListItem
+php wayfinder make:query TaskList --module=Tasks
+php wayfinder make:dto TaskListItem --module=Tasks
+```
+
+Generated defaults:
+
+- models: `app/Models` or `Modules/<Module>/Models`
+- queries: `app/Queries` or `Modules/<Module>/Queries`
+- DTOs: `app/DTOs` or `Modules/<Module>/DTOs`
+
+### Architecture Lint
+
+Use the lint command to enforce the database architecture in app code:
+
+```bash
+php wayfinder lint:architecture
+```
+
+It scans `app/` and `Modules/` for forbidden direct DB access such as:
+
+- `DB::table(...)`
+- `DB::raw(...)`
+- `DB::query(...)`
+- `DB::select(...)`
+- `->query(...)`
+- `->raw(...)`
+- `->statement(...)`
+- `->firstResult(...)`
+
+The lint intentionally ignores migrations, console commands, and views. Run it locally and in CI to keep request-path code inside Models and Query classes.
+
+### Guardrails
+
+Wayfinder keeps the architecture enforced, not advisory:
+
+- controller/request-path reads and writes belong in Models or Query classes
+- `lint:architecture` is the app-facing enforcement command
+- validation and review should treat direct controller DB access as a regression
+
+The intended workflow is:
+
+1. generate the class you need
+2. place single-table behavior in a `Model`
+3. place complex reads in a `Query`
+4. return DTOs from query classes
+5. run `php wayfinder lint:architecture`
+
 ## Current state
 
 Stackmint currently includes:
