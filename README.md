@@ -1334,11 +1334,11 @@ use Wayfinder\Database\DB;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 8;
 
-$users = DB::table('users')
+$users = DB::select('users')
     ->where('status', 'active')
     ->orderBy('name')
     ->forPage($page, $perPage)
-    ->get();
+    ->all();
 ```
 
 If the UI also needs total counts and next/previous page state, pair the paged query with a `Paginator`:
@@ -1352,12 +1352,12 @@ use Wayfinder\Pagination\Paginator;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 8;
 
-$baseQuery = DB::table('users')->where('status', 'active');
+$baseQuery = DB::select('users')->where('status', 'active');
 $total = (clone $baseQuery)->count();
 $items = (clone $baseQuery)
     ->orderBy('name')
     ->forPage($page, $perPage)
-    ->get();
+    ->all();
 
 $paginator = new Paginator($items, $total, $perPage, $page);
 ```
@@ -1444,9 +1444,17 @@ Use `DB::transaction()` to wrap multi-step workflows. It commits on success and 
 
 ```php
 $user = DB::transaction(function () use ($data) {
-    $id = DB::table('users')->insert(['email' => $data['email']]);
-    DB::table('profiles')->insert(['user_id' => $id, 'name' => $data['name']]);
-    return DB::table('users')->where('id', $id)->first();
+    DB::insert('users')
+        ->params(['email' => $data['email']])
+        ->execute();
+
+    $id = DB::lastInsertId();
+
+    DB::insert('profiles')
+        ->params(['user_id' => $id, 'name' => $data['name']])
+        ->execute();
+
+    return DB::select('users')->where('id', $id)->first();
 });
 ```
 
@@ -1517,8 +1525,13 @@ Nested calls run inside the active transaction — commit and rollback are left 
 
 ```php
 DB::transaction(function () use ($order, $items) {
-    DB::table('orders')->insert($order);
-    DB::transaction(fn () => DB::table('order_items')->insert($items));
+    DB::insert('orders')->params($order)->execute();
+
+    DB::transaction(function () use ($items) {
+        foreach ($items as $item) {
+            DB::insert('order_items')->params($item)->execute();
+        }
+    });
 });
 ```
 
