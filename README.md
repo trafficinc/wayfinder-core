@@ -1090,7 +1090,7 @@ $rows = DB::raw(
 );
 ```
 
-### Model Style For Laravel Developers
+### Model Style Familiar for Developers
 
 If you are coming from Laravel, the easiest mental model is:
 
