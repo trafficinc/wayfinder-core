@@ -29,10 +29,10 @@ final class ArchitectureLintCommand implements Command
         'DB::raw' => '/\bDB::raw\s*\(/',
         'DB::query' => '/\bDB::query\s*\(/',
         'DB::select' => '/\bDB::select\s*\(/',
-        'Database::query' => '/(?:\bDatabase::query|\->query)\s*\(/',
-        'Database::raw' => '/(?:\bDatabase::raw|\->raw)\s*\(/',
-        'Database::statement' => '/(?:\bDatabase::statement|\->statement)\s*\(/',
-        'Database::firstResult' => '/(?:\bDatabase::firstResult|\->firstResult)\s*\(/',
+        'Database::query' => '/(?:\bDatabase::query|\$(?:this->)?(?:database|db)\s*->query)\s*\(/',
+        'Database::raw' => '/(?:\bDatabase::raw|\$(?:this->)?(?:database|db)\s*->raw)\s*\(/',
+        'Database::statement' => '/(?:\bDatabase::statement|\$(?:this->)?(?:database|db)\s*->statement)\s*\(/',
+        'Database::firstResult' => '/(?:\bDatabase::firstResult|\$(?:this->)?(?:database|db)\s*->firstResult)\s*\(/',
     ];
 
     /** @var resource */

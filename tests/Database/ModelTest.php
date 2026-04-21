@@ -89,6 +89,46 @@ final class ModelTest extends TestCase
             $users,
         ));
     }
+
+    public function testModelQueryAllAliasReturnsTypedCollection(): void
+    {
+        $this->db->insert('users', [
+            'email' => 'gamma@example.com',
+            'password' => 'one',
+            'is_admin' => 0,
+        ]);
+
+        $users = TestUser::query()->orderBy('id')->all();
+
+        self::assertCount(1, $users);
+        self::assertContainsOnlyInstancesOf(TestUser::class, $users);
+        self::assertSame('gamma@example.com', $users[0]->email);
+    }
+
+    public function testModelQuerySupportsNullPredicatesAndPaginationHelpers(): void
+    {
+        $this->db->insert('users', [
+            'email' => 'null-model@example.com',
+            'password' => 'one',
+            'is_admin' => 0,
+            'nickname' => null,
+        ]);
+        $this->db->insert('users', [
+            'email' => 'named-model@example.com',
+            'password' => 'two',
+            'is_admin' => 1,
+            'nickname' => 'named',
+        ]);
+
+        $nullUsers = TestUser::query()->whereNull('nickname')->all();
+        $namedUsers = TestUser::query()->whereNotNull('nickname')->forPage(1, 1)->all();
+
+        self::assertCount(1, $nullUsers);
+        self::assertSame('null-model@example.com', $nullUsers[0]->email);
+        self::assertCount(1, $namedUsers);
+        self::assertSame('named-model@example.com', $namedUsers[0]->email);
+        self::assertSame(1, TestUser::query()->whereNotNull('nickname')->sum('is_admin'));
+    }
 }
 
 final class TestUser extends Model

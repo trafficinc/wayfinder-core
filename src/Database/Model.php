@@ -72,7 +72,9 @@ abstract class Model
     public static function create(array $attributes): static
     {
         $database = DB::connection();
-        $database->insert(static::tableName(), $attributes);
+        $database->insert(static::tableName())
+            ->params($attributes)
+            ->execute();
 
         $id = $database->lastInsertId();
 

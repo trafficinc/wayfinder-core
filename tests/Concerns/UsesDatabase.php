@@ -20,7 +20,14 @@ trait UsesDatabase
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL,
             password TEXT,
-            is_admin INTEGER DEFAULT 0
+            is_admin INTEGER DEFAULT 0,
+            nickname TEXT NULL
+        )');
+
+        $this->db->statement('CREATE TABLE profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            display_name TEXT NOT NULL
         )');
     }
 

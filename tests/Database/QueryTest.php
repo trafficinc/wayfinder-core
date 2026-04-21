@@ -59,6 +59,73 @@ final class QueryTest extends TestCase
         self::assertInstanceOf(AdminUserEmailData::class, $result);
         self::assertSame('owner@example.com', $result?->email);
     }
+
+    public function testFluentInsertAndAllAliasesWork(): void
+    {
+        $this->db->insert('users')
+            ->params([
+                'email' => 'alias@example.com',
+                'password' => 'secret',
+                'is_admin' => 0,
+            ])
+            ->execute();
+
+        $rows = $this->db->select('users')
+            ->where('email', 'alias@example.com')
+            ->all();
+
+        self::assertCount(1, $rows);
+        self::assertSame('alias@example.com', $rows[0]['email']);
+    }
+
+    public function testNullPredicatesWorkForExplicitAndImplicitNullChecks(): void
+    {
+        $this->db->insert('users', [
+            'email' => 'null@example.com',
+            'password' => 'secret',
+            'is_admin' => 0,
+            'nickname' => null,
+        ]);
+        $this->db->insert('users', [
+            'email' => 'named@example.com',
+            'password' => 'secret',
+            'is_admin' => 0,
+            'nickname' => 'named',
+        ]);
+
+        $nullEmails = $this->db->select('users')
+            ->whereNull('nickname')
+            ->pluck('email');
+
+        $notNullEmails = $this->db->select('users')
+            ->where('nickname', '!=', null)
+            ->pluck('email');
+
+        self::assertSame(['null@example.com'], $nullEmails);
+        self::assertSame(['named@example.com'], $notNullEmails);
+    }
+
+    public function testJoinAliasesCompileAndReturnExpectedRows(): void
+    {
+        $this->db->insert('users', [
+            'email' => 'join@example.com',
+            'password' => 'secret',
+            'is_admin' => 1,
+        ]);
+        $this->db->insert('profiles', [
+            'user_id' => 1,
+            'display_name' => 'Join User',
+        ]);
+
+        $row = $this->db->select('users', ['users.email', 'profiles.display_name'])
+            ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id')
+            ->where('users.id', 1)
+            ->first();
+
+        self::assertIsArray($row);
+        self::assertSame('join@example.com', $row['email']);
+        self::assertSame('Join User', $row['display_name']);
+    }
 }
 
 final class AdminUserEmailsQuery extends Query

@@ -31,7 +31,7 @@ final class QueryBuilder
     /**
      * @var array<string, mixed>
      */
-    private array $updateData = [];
+    private array $writeData = [];
 
     private string $columns = '*';
 
@@ -58,22 +58,7 @@ final class QueryBuilder
      */
     public function insert(array $data): int
     {
-        if ($data === []) {
-            throw new \InvalidArgumentException('Insert data cannot be empty.');
-        }
-
-        $columns = array_keys($data);
-        $placeholders = implode(', ', array_fill(0, count($data), '?'));
-
-        return $this->database->statement(
-            sprintf(
-                'INSERT INTO %s (%s) VALUES (%s)',
-                $this->database->qualifyIdentifier($this->table),
-                implode(', ', array_map($this->database->qualifyIdentifier(...), $columns)),
-                $placeholders,
-            ),
-            array_values($data),
-        );
+        return $this->prepareInsert($data)->execute();
     }
 
     /**
@@ -94,12 +79,19 @@ final class QueryBuilder
      */
     public function prepareUpdate(array $data): self
     {
-        if ($data === []) {
-            throw new \InvalidArgumentException('Update data cannot be empty.');
-        }
-
         $this->operation = 'update';
-        $this->updateData = $data;
+        $this->writeData = $data;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function prepareInsert(array $data = []): self
+    {
+        $this->operation = 'insert';
+        $this->writeData = $data;
 
         return $this;
     }
@@ -107,6 +99,20 @@ final class QueryBuilder
     public function prepareDelete(): self
     {
         $this->operation = 'delete';
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function params(array $data): self
+    {
+        if (! in_array($this->operation, ['insert', 'update'], true)) {
+            throw new \RuntimeException('params() is only available for insert and update operations.');
+        }
+
+        $this->writeData = $data;
 
         return $this;
     }
@@ -137,6 +143,26 @@ final class QueryBuilder
         }
 
         return $this->addWhereClause('or', $column, $operator, $value);
+    }
+
+    public function whereNull(string $column): self
+    {
+        return $this->addNullWhereClause('and', $column, true);
+    }
+
+    public function orWhereNull(string $column): self
+    {
+        return $this->addNullWhereClause('or', $column, true);
+    }
+
+    public function whereNotNull(string $column): self
+    {
+        return $this->addNullWhereClause('and', $column, false);
+    }
+
+    public function orWhereNotNull(string $column): self
+    {
+        return $this->addNullWhereClause('or', $column, false);
     }
 
     public function count(string $column = '*'): int
@@ -235,11 +261,29 @@ final class QueryBuilder
             return $this;
         }
 
+        if ($value === null && in_array($operator, ['=', '!=', '<>'], true)) {
+            return $this->addNullWhereClause($boolean, $column, $operator === '=');
+        }
+
         $this->whereClauses[] = [
             'boolean' => $boolean === 'or' ? 'or' : 'and',
             'clause' => sprintf('%s %s ?', $this->database->qualifyIdentifier($column), $operator),
         ];
         $this->bindings[] = $value;
+
+        return $this;
+    }
+
+    private function addNullWhereClause(string $boolean, string $column, bool $isNull): self
+    {
+        $this->whereClauses[] = [
+            'boolean' => $boolean === 'or' ? 'or' : 'and',
+            'clause' => sprintf(
+                '%s IS %sNULL',
+                $this->database->qualifyIdentifier($column),
+                $isNull ? '' : 'NOT ',
+            ),
+        ];
 
         return $this;
     }
@@ -281,6 +325,31 @@ final class QueryBuilder
         );
 
         return $this;
+    }
+
+    public function innerJoin(string $table, string $left, string $operator, string $right): self
+    {
+        return $this->join('INNER', $table, $left, $operator, $right);
+    }
+
+    public function leftJoin(string $table, string $left, string $operator, string $right): self
+    {
+        return $this->join('LEFT', $table, $left, $operator, $right);
+    }
+
+    public function rightJoin(string $table, string $left, string $operator, string $right): self
+    {
+        return $this->join('RIGHT', $table, $left, $operator, $right);
+    }
+
+    public function fullJoin(string $table, string $left, string $operator, string $right): self
+    {
+        return $this->join('FULL', $table, $left, $operator, $right);
+    }
+
+    public function crossJoin(string $table, string $left, string $operator, string $right): self
+    {
+        return $this->join('CROSS', $table, $left, $operator, $right);
     }
 
     public function orderBy(string $column, string $direction = 'ASC'): self
@@ -327,6 +396,14 @@ final class QueryBuilder
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function all(): array
+    {
+        return $this->get();
+    }
+
+    /**
      * @return array<string, mixed>|false
      */
     public function first(): array|false
@@ -347,8 +424,8 @@ final class QueryBuilder
      */
     public function bindings(): array
     {
-        if ($this->operation === 'update') {
-            return [...array_values($this->updateData), ...$this->bindings];
+        if (in_array($this->operation, ['insert', 'update'], true)) {
+            return [...array_values($this->writeData), ...$this->bindings];
         }
 
         return $this->bindings;
@@ -357,10 +434,28 @@ final class QueryBuilder
     public function toSql(): string
     {
         return match ($this->operation) {
+            'insert' => $this->buildInsertSql(),
             'update' => $this->buildUpdateSql(),
             'delete' => $this->buildDeleteSql(),
             default => $this->buildSelectSql(),
         };
+    }
+
+    private function buildInsertSql(): string
+    {
+        if ($this->writeData === []) {
+            throw new \InvalidArgumentException('Insert data cannot be empty.');
+        }
+
+        $columns = array_keys($this->writeData);
+        $placeholders = implode(', ', array_fill(0, count($this->writeData), '?'));
+
+        return sprintf(
+            'INSERT INTO %s (%s) VALUES (%s)',
+            $this->database->qualifyIdentifier($this->table),
+            implode(', ', array_map($this->database->qualifyIdentifier(...), $columns)),
+            $placeholders,
+        );
     }
 
     private function buildSelectSql(): string
@@ -376,11 +471,15 @@ final class QueryBuilder
 
     private function buildUpdateSql(): string
     {
+        if ($this->writeData === []) {
+            throw new \InvalidArgumentException('Update data cannot be empty.');
+        }
+
         $setClause = implode(
             ', ',
             array_map(
                 fn (string $column): string => sprintf('%s = ?', $this->database->qualifyIdentifier($column)),
-                array_keys($this->updateData),
+                array_keys($this->writeData),
             ),
         );
 

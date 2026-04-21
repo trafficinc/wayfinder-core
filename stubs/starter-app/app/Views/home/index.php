@@ -565,7 +565,7 @@
             <article class="panel feature-card">
                 <strong>Data</strong>
                 <h2>Builder-first database access</h2>
-                <p>Use <code>DB::table(...)</code>, migrations, rollback commands, and database-backed validation without committing the app to ORM magic.</p>
+                <p>Use <code>DB::select(...)</code>, fluent writes, migrations, rollback commands, and database-backed validation without committing the app to ORM magic.</p>
             </article>
             <article class="panel feature-card">
                 <strong>Modules</strong>

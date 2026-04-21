@@ -2,12 +2,21 @@
 
 declare(strict_types=1);
 
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Database;
 use Wayfinder\Support\Events;
 
 if (! function_exists('event')) {
     function event(string $event, mixed ...$payload): void
     {
         Events::dispatch($event, $payload);
+    }
+}
+
+if (! function_exists('db')) {
+    function db(): Database
+    {
+        return DB::connection();
     }
 }
 
@@ -242,4 +251,3 @@ function html_tag(string $tag, array $attributes = [], ?string $content = null):
     }
     return $open . ($content !== null ? e($content) : '') . "</{$tag}>";
 }
-

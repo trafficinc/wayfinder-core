@@ -68,15 +68,21 @@ final class Database
     /**
      * @param array<string, mixed> $data
      */
-    public function insert(string $table, array $data): int
+    public function insert(string $table, array $data = []): int|QueryBuilder
     {
-        return $this->table($table)->insert($data);
+        $builder = $this->table($table)->prepareInsert($data);
+
+        if ($data === []) {
+            return $builder;
+        }
+
+        return $builder->execute();
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    public function update(string $table, array $data): QueryBuilder
+    public function update(string $table, array $data = []): QueryBuilder
     {
         return $this->table($table)->prepareUpdate($data);
     }

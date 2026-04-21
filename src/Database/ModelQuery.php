@@ -44,6 +44,34 @@ final class ModelQuery
         return $this;
     }
 
+    public function whereNull(string $column): self
+    {
+        $this->builder->whereNull($column);
+
+        return $this;
+    }
+
+    public function orWhereNull(string $column): self
+    {
+        $this->builder->orWhereNull($column);
+
+        return $this;
+    }
+
+    public function whereNotNull(string $column): self
+    {
+        $this->builder->whereNotNull($column);
+
+        return $this;
+    }
+
+    public function orWhereNotNull(string $column): self
+    {
+        $this->builder->orWhereNotNull($column);
+
+        return $this;
+    }
+
     public function orderBy(string $column, string $direction = 'ASC'): self
     {
         $this->builder->orderBy($column, $direction);
@@ -65,6 +93,13 @@ final class ModelQuery
         return $this;
     }
 
+    public function forPage(int $page, int $perPage): self
+    {
+        $this->builder->forPage($page, $perPage);
+
+        return $this;
+    }
+
     /**
      * @return list<TModel>
      */
@@ -74,6 +109,14 @@ final class ModelQuery
             fn (array $row): Model => $this->modelClass::fromDatabaseRow($row),
             $this->builder->get(),
         );
+    }
+
+    /**
+     * @return list<TModel>
+     */
+    public function all(): array
+    {
+        return $this->get();
     }
 
     /**
@@ -98,6 +141,26 @@ final class ModelQuery
     public function exists(): bool
     {
         return $this->builder->exists();
+    }
+
+    public function sum(string $column): int|float
+    {
+        return $this->builder->sum($column);
+    }
+
+    public function avg(string $column): int|float
+    {
+        return $this->builder->avg($column);
+    }
+
+    public function min(string $column): mixed
+    {
+        return $this->builder->min($column);
+    }
+
+    public function max(string $column): mixed
+    {
+        return $this->builder->max($column);
     }
 
     public function value(string $column): mixed

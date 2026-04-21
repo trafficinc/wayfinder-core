@@ -1033,19 +1033,19 @@ Example:
 
 use Wayfinder\Database\DB;
 
-$users = DB::table('users')
+$users = DB::select('users')
     ->where('status', 'active')
     ->orderBy('id', 'DESC')
     ->limit(10)
-    ->get();
+    ->all();
 ```
 
 Available operations include:
 
 - `table`, `select`, `insert`, `update`, `delete`
-- `where`, `orWhere`, grouped conditions, including `IN` and `NOT IN`
-- `join`, `orderBy`, `limit`, `offset`
-- `get`, `first`, `execute`, `forPage`
+- `where`, `orWhere`, `whereNull`, `whereNotNull`, grouped conditions, including `IN` and `NOT IN`
+- `join`, `innerJoin`, `leftJoin`, `rightJoin`, `fullJoin`, `orderBy`, `limit`, `offset`
+- `get`, `all`, `first`, `execute`, `params`, `forPage`
 - `count`, `exists`, `sum`, `avg`, `min`, `max`
 - `value`, `pluck`
 - raw `raw`, `query`, and `statement`
@@ -1054,33 +1054,268 @@ Available operations include:
 Examples:
 
 ```php
-$user = DB::table('users')
+$user = DB::select('users')
     ->where('email', $email)
     ->first();
 
-DB::table('users')->insert([
-    'name' => 'Ron',
-    'email' => 'ron@example.com',
-]);
+DB::insert('users')
+    ->params([
+        'name' => 'Ron',
+        'email' => 'ron@example.com',
+    ])
+    ->execute();
 
-DB::table('users')
+DB::update('users')
+    ->params(['name' => 'Ron Biuya'])
     ->where('email', 'ron@example.com')
-    ->update(['name' => 'Ron Biuya']);
+    ->execute();
 
-$emails = DB::table('users')
+$emails = DB::select('users')
     ->where(function ($query) {
         $query->where('email', 'ron@example.com')
             ->orWhere('email', 'ava@example.com');
     })
     ->pluck('email');
 
-$count = DB::table('users')->count();
+$profiles = db()->select('users', ['users.email', 'profiles.display_name'])
+    ->leftJoin('profiles', 'profiles.user_id', '=', 'users.id')
+    ->whereNotNull('profiles.display_name')
+    ->all();
+
+$count = DB::select('users')->count();
 
 $rows = DB::raw(
     'SELECT id, email FROM users WHERE email LIKE ? ORDER BY id DESC LIMIT 5',
     ['%@example.com']
 );
 ```
+
+### Model Style For Laravel Developers
+
+If you are coming from Laravel, the easiest mental model is:
+
+- use `Model` as the front door for entity reads and writes
+- use the fluent DB builder inside model methods instead of raw SQL strings
+- keep joins explicit
+- stop before adding relationship magic or hidden eager loading
+
+Simple model examples:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Tasks\Models;
+
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    public static function findBySlug(string $slug): ?self
+    {
+        return static::where('slug', trim($slug))->first();
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function recentOpen(int $limit = 10): array
+    {
+        return static::query()
+            ->where('status', 'open')
+            ->orderBy('id', 'DESC')
+            ->limit($limit)
+            ->all();
+    }
+
+    public static function existsForSlug(string $slug): bool
+    {
+        return static::query()
+            ->where('slug', trim($slug))
+            ->exists();
+    }
+}
+```
+
+Single-table write helpers:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Tasks\Models;
+
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    public static function createTask(array $attributes): self
+    {
+        return static::create([
+            'title' => (string) ($attributes['title'] ?? ''),
+            'slug' => (string) ($attributes['slug'] ?? ''),
+            'status' => (string) ($attributes['status'] ?? 'open'),
+            'assigned_user_id' => $attributes['assigned_user_id'] ?? null,
+            'created_at' => gmdate('Y-m-d H:i:s'),
+            'updated_at' => gmdate('Y-m-d H:i:s'),
+        ]);
+    }
+
+    public static function markCompleted(int|string $id): int
+    {
+        return DB::update('tasks')
+            ->params([
+                'status' => 'completed',
+                'updated_at' => gmdate('Y-m-d H:i:s'),
+            ])
+            ->where('id', $id)
+            ->execute();
+    }
+
+    public static function deleteArchived(): int
+    {
+        return DB::delete('tasks')
+            ->where('status', 'archived')
+            ->execute();
+    }
+}
+```
+
+If you want array rows instead of hydrated model objects, use the builder directly inside the model:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Tasks\Models;
+
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function dueSoon(int $limit = 20): array
+    {
+        return DB::select('tasks')
+            ->where('status', 'open')
+            ->whereNotNull('due_at')
+            ->orderBy('due_at')
+            ->limit($limit)
+            ->all();
+    }
+}
+```
+
+More advanced explicit join examples:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Tasks\Models;
+
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function dashboardRows(string $status = 'open', int $limit = 25): array
+    {
+        return DB::select('tasks', [
+            'tasks.id',
+            'tasks.title',
+            'tasks.slug',
+            'tasks.status',
+            'tasks.due_at',
+            'users.name',
+            'projects.title',
+        ])
+            ->leftJoin('users', 'users.id', '=', 'tasks.assigned_user_id')
+            ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
+            ->where('tasks.status', $status)
+            ->orderBy('tasks.due_at')
+            ->orderBy('tasks.id', 'DESC')
+            ->limit($limit)
+            ->all();
+    }
+
+    public static function countOpenForProject(int|string $projectId): int
+    {
+        return DB::select('tasks')
+            ->where('project_id', $projectId)
+            ->where('status', 'open')
+            ->count();
+    }
+
+    public static function unassignedExistsForProject(int|string $projectId): bool
+    {
+        return DB::select('tasks')
+            ->where('project_id', $projectId)
+            ->whereNull('assigned_user_id')
+            ->exists();
+    }
+}
+```
+
+You can also keep the join explicit but still hydrate the base model when you only need task columns:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Tasks\Models;
+
+use Wayfinder\Database\DB;
+use Wayfinder\Database\Model;
+
+final class Task extends Model
+{
+    protected static string $table = 'tasks';
+
+    /**
+     * @return list<self>
+     */
+    public static function assignedToActiveUsers(): array
+    {
+        $rows = DB::select('tasks', ['tasks.*'])
+            ->innerJoin('users', 'users.id', '=', 'tasks.assigned_user_id')
+            ->where('users.status', 'active')
+            ->orderBy('tasks.id', 'DESC')
+            ->all();
+
+        return array_map(
+            static fn (array $row): self => static::fromDatabaseRow($row),
+            $rows,
+        );
+    }
+}
+```
+
+Where to stop:
+
+- good fit for models: single-table CRUD, direct lookups, existence checks, explicit joins that are still task-centric
+- better fit for query classes: dashboards, reports, large read projections, multi-table read models for pages or APIs
+- not a goal: `hasMany`, `belongsTo`, eager loading, hidden global scopes, automatic nested object graphs
 
 ### Pagination
 

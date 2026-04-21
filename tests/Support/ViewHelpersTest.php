@@ -8,6 +8,11 @@ use PHPUnit\Framework\TestCase;
 
 final class ViewHelpersTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        \Wayfinder\Database\DB::setResolver(static fn () => throw new \RuntimeException('DB resolver not configured.'));
+    }
+
     public function test_e_escapes_html_special_characters(): void
     {
         self::assertSame(
@@ -79,5 +84,13 @@ final class ViewHelpersTest extends TestCase
     {
         self::assertSame('disabled', \disabled());
         self::assertSame('', \disabled(false));
+    }
+
+    public function test_db_helper_returns_database_connection(): void
+    {
+        $database = new \Wayfinder\Database\Database(['driver' => 'sqlite', 'path' => ':memory:']);
+        \Wayfinder\Database\DB::setResolver(static fn (): \Wayfinder\Database\Database => $database);
+
+        self::assertSame($database, \db());
     }
 }
