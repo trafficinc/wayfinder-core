@@ -7,25 +7,25 @@ namespace Wayfinder\Database;
 final class DB
 {
     /**
-     * @var callable(): Database|null
+     * @var callable(?string): Database|null
      */
     private static $resolver = null;
 
     /**
-     * @param callable(): Database $resolver
+     * @param callable(?string): Database $resolver
      */
     public static function setResolver(callable $resolver): void
     {
         self::$resolver = $resolver;
     }
 
-    public static function connection(): Database
+    public static function connection(?string $name = null): Database
     {
         if (self::$resolver === null) {
             throw new \RuntimeException('No database resolver has been configured.');
         }
 
-        return (self::$resolver)();
+        return (self::$resolver)($name);
     }
 
     public static function table(string $table): QueryBuilder

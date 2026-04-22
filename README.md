@@ -526,6 +526,7 @@ The expected pattern is:
 <?php
 
 use Wayfinder\Database\Database;
+use Wayfinder\Database\DatabaseManager;
 use Wayfinder\Foundation\AppKernel;
 use Wayfinder\Routing\Router;
 use Wayfinder\Support\Config;
@@ -539,7 +540,8 @@ $events = new EventDispatcher();
 Events::setDispatcher($events);
 
 $container->instance(Config::class, $config);
-$container->singleton(Database::class, fn () => new Database($config->get('database.default')));
+$container->singleton(DatabaseManager::class, fn () => new DatabaseManager($config->get('database')));
+$container->singleton(Database::class, fn (Container $container) => $container->get(DatabaseManager::class)->connection());
 
 $router = new Router($container, $events, 'App\\Controllers\\');
 

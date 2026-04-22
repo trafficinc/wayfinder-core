@@ -78,6 +78,31 @@ final class QueueBootstrapperTest extends TestCase
         self::assertSame(1, BootstrapperCountingJob::$handled);
     }
 
+    public function testRegisterAcceptsNamedDatabaseConnectionsConfig(): void
+    {
+        $container = $this->makeContainer();
+
+        QueueBootstrapper::register($container, new Config([
+            'database' => [
+                'default' => 'primary',
+                'connections' => [
+                    'primary' => ['driver' => 'sqlite', 'path' => $this->tempDir . '/db.sqlite'],
+                ],
+            ],
+            'queue' => [
+                'default' => 'file',
+                'connections' => [
+                    'file' => [
+                        'driver' => 'file',
+                        'path' => $this->tempDir . '/queue',
+                    ],
+                ],
+            ],
+        ]));
+
+        self::assertInstanceOf(Queue::class, $container->get(Queue::class));
+    }
+
     public function testRegisterCommandsAddsDefaultQueueCommands(): void
     {
         $container = $this->makeContainer();

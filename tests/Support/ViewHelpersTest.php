@@ -10,7 +10,7 @@ final class ViewHelpersTest extends TestCase
 {
     protected function tearDown(): void
     {
-        \Wayfinder\Database\DB::setResolver(static fn () => throw new \RuntimeException('DB resolver not configured.'));
+        \Wayfinder\Database\DB::setResolver(static fn (?string $name = null) => throw new \RuntimeException('DB resolver not configured.'));
     }
 
     public function test_e_escapes_html_special_characters(): void
@@ -89,8 +89,25 @@ final class ViewHelpersTest extends TestCase
     public function test_db_helper_returns_database_connection(): void
     {
         $database = new \Wayfinder\Database\Database(['driver' => 'sqlite', 'path' => ':memory:']);
-        \Wayfinder\Database\DB::setResolver(static fn (): \Wayfinder\Database\Database => $database);
+        \Wayfinder\Database\DB::setResolver(static fn (?string $name = null): \Wayfinder\Database\Database => $database);
 
         self::assertSame($database, \db());
+    }
+
+    public function test_db_helper_can_resolve_named_connection(): void
+    {
+        $default = new \Wayfinder\Database\Database(['driver' => 'sqlite', 'path' => ':memory:']);
+        $analytics = new \Wayfinder\Database\Database(['driver' => 'sqlite', 'path' => ':memory:']);
+
+        \Wayfinder\Database\DB::setResolver(static function (?string $name = null) use ($default, $analytics): \Wayfinder\Database\Database {
+            return match ($name) {
+                'analytics' => $analytics,
+                null => $default,
+                default => throw new \RuntimeException('DB resolver not configured.'),
+            };
+        });
+
+        self::assertSame($default, \db());
+        self::assertSame($analytics, \db('analytics'));
     }
 }

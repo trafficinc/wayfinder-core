@@ -9,6 +9,7 @@ use Wayfinder\Console\QueueRecoverCommand;
 use Wayfinder\Console\QueueStatusCommand;
 use Wayfinder\Console\QueueWorkCommand;
 use Wayfinder\Database\Database;
+use Wayfinder\Database\DatabaseManager;
 use Wayfinder\Logging\Logger;
 use Wayfinder\Support\Config;
 use Wayfinder\Support\Container;
@@ -17,8 +18,11 @@ final class QueueBootstrapper
 {
     public static function register(Container $container, Config $config): void
     {
+        $databaseConfig = $config->get('database', []);
+        $databaseManager = new DatabaseManager(is_array($databaseConfig) ? $databaseConfig : []);
+
         $container->singleton(QueueFactory::class, static fn (Container $container): QueueFactory => new QueueFactory(
-            is_array($config->get('database.default')) ? $container->get(Database::class) : null,
+            $databaseManager->hasConnections() ? $container->get(Database::class) : null,
         ));
         $container->singleton(Queue::class, static fn (Container $container): Queue => (static function () use ($config, $container): Queue {
             $default = (string) $config->get('queue.default', 'file');

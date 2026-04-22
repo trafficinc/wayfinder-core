@@ -14,9 +14,9 @@ if (! function_exists('event')) {
 }
 
 if (! function_exists('db')) {
-    function db(): Database
+    function db(?string $name = null): Database
     {
-        return DB::connection();
+        return DB::connection($name);
     }
 }
 

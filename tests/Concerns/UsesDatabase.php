@@ -14,7 +14,7 @@ trait UsesDatabase
     protected function setUpDatabase(): void
     {
         $this->db = new Database(['driver' => 'sqlite', 'path' => ':memory:']);
-        DB::setResolver(fn (): Database => $this->db);
+        DB::setResolver(fn (?string $name = null): Database => $this->db);
 
         $this->db->statement('CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,6 +33,6 @@ trait UsesDatabase
 
     protected function tearDownDatabase(): void
     {
-        DB::setResolver(static fn () => throw new \RuntimeException('DB resolver not configured.'));
+        DB::setResolver(static fn (?string $name = null) => throw new \RuntimeException('DB resolver not configured.'));
     }
 }
